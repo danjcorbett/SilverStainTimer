@@ -1,12 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Bell, Plus, Trash2, Volume2, VolumeX, Moon, Sun } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
-import { Progress } from '@/components/ui/progress';
-import { Input } from '@/components/ui/input';
-import { Switch } from '@/components/ui/switch';
-import { Label } from '@/components/ui/label';
+import { Button } from './components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from './components/ui/card';
+import { Alert, AlertTitle, AlertDescription } from './components/ui/alert';
+import { Progress } from './components/ui/progress';
+import { Input } from './components/ui/input';
+import { Switch } from './components/ui/switch';
+import { Label } from './components/ui/label';
 
 const defaultSteps = [
   { name: 'Fixation', duration: 30 * 60 },
