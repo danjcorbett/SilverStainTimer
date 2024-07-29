@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Bell, Plus, Trash2, Volume2, VolumeX, Moon, Sun } from 'lucide-react';
 
 const defaultSteps = [
@@ -32,12 +32,33 @@ const SilverStainingTimer = () => {
   const experimentCompleteAudioRef = useRef(null);
   const buttonClickAudioRef = useRef(null);
 
+  const playSound = useCallback((audioRef) => {
+    if (soundEnabled && audioRef.current) {
+      audioRef.current.currentTime = 0;
+      audioRef.current.play().catch(error => console.error('Audio playback failed', error));
+    }
+  }, [soundEnabled]);
+
+  const handleStepComplete = useCallback(() => {
+    setShowAlert(true);
+    playSound(stepCompleteAudioRef);
+    setCurrentStep(prev => prev + 1);
+    setTimeLeft(steps[currentStep + 1].duration);
+    setProgress(0);
+  }, [currentStep, playSound, steps, stepCompleteAudioRef]);
+
+  const handleExperimentComplete = useCallback(() => {
+    setIsRunning(false);
+    setShowAlert(true);
+    playSound(experimentCompleteAudioRef);
+  }, [playSound, experimentCompleteAudioRef]);
+
   useEffect(() => {
     let timer;
     if (isRunning && timeLeft > 0) {
       timer = setInterval(() => {
-        setTimeLeft((prev) => prev - 1);
-        setProgress((prev) => prev + (100 / steps[currentStep].duration));
+        setTimeLeft(prev => prev - 1);
+        setProgress(prev => prev + (100 / steps[currentStep].duration));
       }, 1000);
     } else if (timeLeft === 0 && currentStep < steps.length - 1) {
       handleStepComplete();
@@ -45,82 +66,65 @@ const SilverStainingTimer = () => {
       handleExperimentComplete();
     }
     return () => clearInterval(timer);
-  }, [isRunning, timeLeft, currentStep, steps]);
+  }, [isRunning, timeLeft, currentStep, steps, handleStepComplete, handleExperimentComplete]);
 
   useEffect(() => {
     document.documentElement.classList.toggle('dark', darkMode);
   }, [darkMode]);
 
-  const playSound = (audioRef) => {
-    if (soundEnabled && audioRef.current) {
-      audioRef.current.currentTime = 0;
-      audioRef.current.play().catch(error => console.error('Audio playback failed', error));
-    }
-  };
-
-  const handleStepComplete = () => {
-    setShowAlert(true);
-    playSound(stepCompleteAudioRef);
-    setCurrentStep((prev) => prev + 1);
-    setTimeLeft(steps[currentStep + 1].duration);
-    setProgress(0);
-  };
-
-  const handleExperimentComplete = () => {
-    setIsRunning(false);
-    setShowAlert(true);
-    playSound(experimentCompleteAudioRef);
-  };
-
-  const handleStart = () => {
+  const handleStart = useCallback(() => {
     setIsRunning(true);
     playSound(buttonClickAudioRef);
-  };
+  }, [playSound, buttonClickAudioRef]);
 
-  const handlePause = () => {
+  const handlePause = useCallback(() => {
     setIsRunning(false);
     playSound(buttonClickAudioRef);
-  };
+  }, [playSound, buttonClickAudioRef]);
 
-  const handleReset = () => {
+  const handleReset = useCallback(() => {
     setIsRunning(false);
     setCurrentStep(0);
     setTimeLeft(steps[0].duration);
     setShowAlert(false);
     setProgress(0);
     playSound(buttonClickAudioRef);
-  };
+  }, [steps, playSound, buttonClickAudioRef]);
 
-  const handleAddStep = () => {
-    setSteps([...steps, { name: 'New Step', duration: 5 * 60 }]);
+  const handleAddStep = useCallback(() => {
+    setSteps(prevSteps => [...prevSteps, { name: 'New Step', duration: 5 * 60 }]);
     playSound(buttonClickAudioRef);
-  };
+  }, [playSound, buttonClickAudioRef]);
 
-  const handleRemoveStep = (index) => {
-    const newSteps = steps.filter((_, i) => i !== index);
-    setSteps(newSteps);
-    if (currentStep >= newSteps.length) {
-      setCurrentStep(newSteps.length - 1);
-      setTimeLeft(newSteps[newSteps.length - 1].duration);
-    }
+  const handleRemoveStep = useCallback((index) => {
+    setSteps(prevSteps => {
+      const newSteps = prevSteps.filter((_, i) => i !== index);
+      if (currentStep >= newSteps.length) {
+        setCurrentStep(newSteps.length - 1);
+        setTimeLeft(newSteps[newSteps.length - 1].duration);
+      }
+      return newSteps;
+    });
     playSound(buttonClickAudioRef);
-  };
+  }, [currentStep, playSound, buttonClickAudioRef]);
 
-  const handleStepChange = (index, field, value) => {
-    const newSteps = [...steps];
-    newSteps[index][field] = field === 'duration' ? parseInt(value) * 60 : value;
-    setSteps(newSteps);
-    if (index === currentStep) {
-      setTimeLeft(newSteps[index].duration);
-    }
-  };
+  const handleStepChange = useCallback((index, field, value) => {
+    setSteps(prevSteps => {
+      const newSteps = [...prevSteps];
+      newSteps[index][field] = field === 'duration' ? parseInt(value) * 60 : value;
+      if (index === currentStep) {
+        setTimeLeft(newSteps[index].duration);
+      }
+      return newSteps;
+    });
+  }, [currentStep]);
 
-  const toggleSound = () => {
-    setSoundEnabled(!soundEnabled);
+  const toggleSound = useCallback(() => {
+    setSoundEnabled(prev => !prev);
     playSound(buttonClickAudioRef);
-  };
+  }, [playSound, buttonClickAudioRef]);
 
-  const toggleDarkMode = () => setDarkMode(!darkMode);
+  const toggleDarkMode = useCallback(() => setDarkMode(prev => !prev), []);
 
   return (
     <div className="max-w-2xl mx-auto p-4">
