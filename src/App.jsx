@@ -1,12 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Bell, Plus, Trash2, Volume2, VolumeX, Moon, Sun } from 'lucide-react';
-import { Button } from './components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from './components/ui/card';
-import { Alert, AlertTitle, AlertDescription } from './components/ui/alert';
-import { Progress } from './components/ui/progress';
-import { Input } from './components/ui/input';
-import { Switch } from './components/ui/switch';
-import { Label } from './components/ui/label';
 
 const defaultSteps = [
   { name: 'Fixation', duration: 30 * 60 },
@@ -131,75 +124,75 @@ const SilverStainingTimer = () => {
 
   return (
     <div className="max-w-2xl mx-auto p-4">
-      <Card className="mb-4">
-        <CardHeader>
-          <CardTitle className="flex justify-between items-center">
-            Advanced Silver Staining Timer
+      <div className="mb-4">
+        <div>
+          <div className="flex justify-between items-center">
+            <h1 className="text-2xl font-bold">Advanced Silver Staining Timer</h1>
             <div className="flex items-center space-x-2">
-              <Switch id="dark-mode" checked={darkMode} onCheckedChange={toggleDarkMode} />
-              <Label htmlFor="dark-mode">{darkMode ? <Moon className="h-4 w-4" /> : <Sun className="h-4 w-4" />}</Label>
+              <input type="checkbox" id="dark-mode" checked={darkMode} onChange={toggleDarkMode} />
+              <label htmlFor="dark-mode">{darkMode ? <Moon className="h-4 w-4" /> : <Sun className="h-4 w-4" />}</label>
             </div>
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
+          </div>
+        </div>
+        <div>
           <div className="text-center mb-4">
             <h2 className="text-2xl font-bold">{steps[currentStep].name}</h2>
             <p className="text-4xl font-mono">{formatTime(timeLeft)}</p>
-            <Progress value={progress} className="mt-2" />
+            <progress value={progress} max="100" className="w-full mt-2" />
           </div>
           <div className="flex justify-center space-x-2 mb-4">
             {!isRunning ? (
-              <Button onClick={handleStart}>Start</Button>
+              <button onClick={handleStart} className="px-4 py-2 bg-blue-500 text-white rounded">Start</button>
             ) : (
-              <Button onClick={handlePause}>Pause</Button>
+              <button onClick={handlePause} className="px-4 py-2 bg-yellow-500 text-white rounded">Pause</button>
             )}
-            <Button onClick={handleReset}>Reset</Button>
-            <Button onClick={toggleSound}>
+            <button onClick={handleReset} className="px-4 py-2 bg-red-500 text-white rounded">Reset</button>
+            <button onClick={toggleSound} className="px-4 py-2 bg-gray-500 text-white rounded">
               {soundEnabled ? <Volume2 size={20} /> : <VolumeX size={20} />}
-            </Button>
+            </button>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Experiment Steps</CardTitle>
-        </CardHeader>
-        <CardContent>
+      <div className="border p-4 rounded">
+        <div>
+          <h3 className="text-xl font-bold mb-2">Experiment Steps</h3>
+        </div>
+        <div>
           {steps.map((step, index) => (
             <div key={index} className="flex items-center space-x-2 mb-2">
-              <Input
+              <input
                 value={step.name}
                 onChange={(e) => handleStepChange(index, 'name', e.target.value)}
-                className="flex-grow"
+                className="flex-grow p-2 border rounded"
               />
-              <Input
+              <input
                 type="number"
                 value={step.duration / 60}
                 onChange={(e) => handleStepChange(index, 'duration', e.target.value)}
-                className="w-20"
+                className="w-20 p-2 border rounded"
               />
-              <Button variant="outline" size="icon" onClick={() => handleRemoveStep(index)}>
+              <button onClick={() => handleRemoveStep(index)} className="p-2 bg-red-500 text-white rounded">
                 <Trash2 className="h-4 w-4" />
-              </Button>
+              </button>
             </div>
           ))}
-          <Button onClick={handleAddStep} className="mt-2">
+          <button onClick={handleAddStep} className="mt-2 p-2 bg-green-500 text-white rounded flex items-center">
             <Plus className="h-4 w-4 mr-2" /> Add Step
-          </Button>
-        </CardContent>
-      </Card>
+          </button>
+        </div>
+      </div>
 
       {showAlert && (
-        <Alert className="mt-4">
-          <Bell className="h-4 w-4" />
-          <AlertTitle>Step Complete!</AlertTitle>
-          <AlertDescription>
+        <div className="mt-4 p-4 bg-yellow-100 border border-yellow-400 rounded">
+          <Bell className="h-4 w-4 inline mr-2" />
+          <strong>Step Complete!</strong>
+          <p>
             {currentStep < steps.length - 1
               ? `Time to start: ${steps[currentStep].name}`
               : 'Silver staining process complete!'}
-          </AlertDescription>
-        </Alert>
+          </p>
+        </div>
       )}
 
       <audio ref={stepCompleteAudioRef} src="/api/placeholder/audio/step-complete.mp3" />
